@@ -14,20 +14,23 @@ def Get_upperPoint(gradient,length,x1,y1):
     vertical_gradient = -1. / gradient
     # y절편
     y_ = y1 - vertical_gradient * x1
-    x = x1- math.sqrt((length) ** 2 / ((gradient) ** 2 + 1))
-    y = gradient*(x1-x) + y1
+    x = x1 + math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
+    x_ = x1 - math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
+    print('x : ', x)
+    print('x_ : ', x_)
+    if(x < x_):
+        print('경우가 있음')
+    y = vertical_gradient*(x - x1) + y1
+
     return x, y
-    # y = vertical_gradient * x + y_
-    # (gradient * x - x1) ** 2 + (vertical_gradient * x + y_  - y1) ** 2 = length ** 2
-    # x ** 2 -2*x*x1 + x1 ** 2 + vertical_gradient * x
+
 
 def Get_downPoint(gradient,length,x1,y1):
     vertical_gradient = -1. / gradient
     # y절편
-    y_ = y1 - vertical_gradient * x1
-    x = x1- math.sqrt((length) ** 2 / ((gradient) ** 2 + 1))
-    y = gradient*(x1-x) + y1
-    return y,x
+    x = x1 - math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
+    y = vertical_gradient*(x - x1) + y1
+    return x,y
 
 
 
@@ -43,13 +46,12 @@ down_y = []
 # 기울기
 gradient = 0
 # 간격
-length = 0.5
+length = 0.05
 for i in range(len(time)):
-
     try:
         gradient = Get_gradient(time[i], y_points[i], time[i+1], y_points[i+1])
         x,y  = Get_upperPoint(gradient, length, time[i], y_points[i])
-        y_,x_ = Get_downPoint(gradient, length, time[i], y_points[i])
+        x_,y_ = Get_downPoint(gradient, length, time[i], y_points[i])
         upper_x.append(x)
         upper_y.append(y)
         down_x.append(x_)
@@ -62,7 +64,7 @@ print(len(upper_x))
 
 plt.plot(time, y_points, '-')  # 연속적인 그래프 그리기
 plt.plot(upper_x, upper_y, '-')
-# plt.plot(down_x, down_y, '-')
+plt.plot(down_x, down_y, '-')
 plt.xlabel('시간')  # X축 레이블 설정
 plt.ylabel('값')  # Y축 레이블 설정
 plt.title('시간에 따른 연속적인 그래프와 영역 색칠')  # 그래프 제목 설정
