@@ -3,101 +3,71 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import font_manager, rc
+
+def circle_point(center_x, center_y, coord_x, r):
+    upper_y = 0
+    down_y = 0
+    try:
+        if coord_x < center_x - r or coord_x > center_x + r:
+            raise ValueError('Coord_x is out of circlue range.')
+        y = center_y + math.sqrt(r ** 2 - (coord_x-center_x) ** 2)
+        y_ = center_y - math.sqrt(r ** 2 - (coord_x-center_x) ** 2)
+    except ValueError:
+        y = math.nan
+        y_ = math.nan
+    if(y > y_):
+        upper_y = y
+        down_y = y_
+    else:
+        down_y = y
+        upper_y = y_
+
+    return upper_y, down_y
+
+
 font_path = "C:/Windows/Fonts/NGULIM.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
-gradient_flag = True
-gradient_ = 0
-def Get_gradient(x1, y1, x2, y2, count):
-    global gradient_, gradient_flag
-    gradient = (y1 - y2) / (x1 - x2)
-    if(count == 0):
-        gradient_ = gradient
-    else:
-        if(gradient_ < 0 and gradient > 0):
-            gradient_flag = not(gradient_flag)
-            gradient_ = gradient
-        elif(gradient_ > 0 and gradient < 0):
-            gradient_flag = not(gradient_flag)
-            gradient_ = gradient
-        else:
-
-            gradient_ = gradient
-    return gradient
-
-def Get_upperPoint(gradient,length,x1,y1):
-    global gradient_flag, grdient_
-    vertical_gradient = -1. / gradient
-    # y절편
-
-    if(gradient_flag == False):
-        x = x1 + math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
-    else:
-        x = x1 - math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
-
-    y = vertical_gradient*(x - x1) + y1
-
-    return x, y
-
-
-def Get_downPoint(gradient,length,x1,y1):
-    vertical_gradient = -1. / gradient
-    # y절편
-    if(gradient_flag == True):
-        x = x1 + math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
-    else:
-        x = x1 - math.sqrt(length ** 2 * gradient ** 2 / (gradient ** 2 + 1))
-    y = vertical_gradient * (x - x1) + y1
-    return x,y
-
-
 
 # 시간에 따른 랜덤한 값들 생성
-# np.random.seed(0)  # 랜덤 시드 고정
-# num_points = 1000  # 생성할 점의 개수
-# time = np.linspace(0, 10, num_points)  # 0부터 10까지의 시간 생성
-# y_points = np.random.randn(num_points).cumsum()  # 랜덤한 값들의 누적합 계산
-# time = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9]
-# y_points = [1,1.2,2,3,-1.2,-1,5,-2,-1,-3]
-# time = [1,1.5, 2,2.5,3,3.5,4,4.5,5,5.5,6]
-# y_points = [1,1.2,2,3,-1.2,-1,5,-2,-1,-3,6]
-time = [10,20,30,40,50,60,70,80,90,100]
-y_points = [1,1.2,2,3,-1.2,-1,5,-2,-1,-3]
-circle_x = []
-circle_y = []
+np.random.seed(0)  # 랜덤 시드 고정
+num_points = 100  # 생성할 점의 개수
+time = np.arange(0, 100)  # 0부터 10까지의 시간 생성
+y_points = np.random.randn(num_points).cumsum()  # 랜덤한 값들의 누적합 계산
 
-upper_x = []
-upper_y = []
-down_x = []
-down_y = []
-# 기울기
-gradient = 0
+
 # 간격
-length = 1
+length = 2
 theta = np.linspace(0, 2 * np.pi, 100)
+
+upper_y = [-math.inf for i in range(len(time)+length)]
+down_y = [math.inf for j in range(len(time) + length)]
 for i in range(len(time)):
     try:
-        print(time[i], y_points[i], time[i+1], y_points[i+1])
-        gradient = Get_gradient(time[i], y_points[i], time[i+1], y_points[i+1], i)
-        x,y = Get_upperPoint(gradient, length, time[i], y_points[i])
-        x_,y_ = Get_downPoint(gradient, length, time[i], y_points[i])
+        for j in range(int(time[i] - length), int(time[i] + length)):
+            print('j :', j)
+            print(circle_point(time[i], y_points[i],j,length))
+            if(j < 0):
+                continue
+            if(upper_y[j] < circle_point(time[i], y_points[i],j,length)[0]):
+                upper_y[j] = circle_point(time[i], y_points[i],j,length)[0]
+            if(down_y[j] > circle_point(time[i], y_points[i],j,length)[1]):
+                down_y[j] = circle_point(time[i], y_points[i],j,length)[1]
+
+
         c_x = time[i] + length * np.cos(theta)
         c_y = y_points[i] + length * np.sin(theta)
+        plt.axis('equal')
         plt.plot(c_x, c_y, '-')
-        upper_x.append(x)
-        upper_y.append(y)
-        down_x.append(x_)
-        down_y.append(y_)
+
     except Exception as err:
         print({err})
 
 
-print(len(upper_x))
-# 그래프 그리기
 
 plt.plot(time, y_points, '-')  # 연속적인 그래프 그리기
-plt.plot(upper_x, upper_y, '-')
-plt.plot(down_x, down_y, '-')
+plt.plot(time, upper_y[0:len(time)], '-')
+plt.plot(time, down_y[0:len(time)], '-')
 plt.xlabel('시간')  # X축 레이블 설정
 plt.ylabel('값')  # Y축 레이블 설정
 plt.title('시간에 따른 연속적인 그래프와 영역 색칠')  # 그래프 제목 설정
